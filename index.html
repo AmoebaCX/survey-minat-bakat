@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Survey Minat Bakat ADK</title>
+<style>
+  :root {
+    --sage-900: #3F5A45;
+    --sage-700: #5C7A62;
+    --sage-500: #7A9A7E;
+    --sage-300: #B5C9B7;
+    --sage-100: #DCE6DC;
+    --cream-50: #FAF7F0;
+    --cream-100: #F5F1E8;
+    --cream-200: #EAE3D2;
+    --ink: #2B3530;
+    --muted: #6B7570;
+    --border: #E1DBC9;
+    --error: #B85C5C;
+    --shadow: 0 1px 2px rgba(63,90,69,.04), 0 8px 32px rgba(63,90,69,.06);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--cream-50);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .bg {
+    position: fixed; inset: 0; z-index: -1;
+    background:
+      radial-gradient(1200px 600px at 10% -20%, rgba(122,154,126,.10), transparent 60%),
+      radial-gradient(900px 500px at 110% 120%, rgba(122,154,126,.08), transparent 60%),
+      var(--cream-50);
+  }
+  .shell { max-width: 720px; margin: 0 auto; padding: 32px 20px 80px; }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--sage-700); font-weight: 600;
+    letter-spacing: .02em; font-size: 13px;
+    text-transform: uppercase; margin-bottom: 18px;
+  }
+  .brand .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sage-500); }
+  .progress-wrap { margin: 0 0 28px; }
+  .progress-meta {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--muted);
+    margin-bottom: 8px; letter-spacing: .03em;
+  }
+  .progress-bar { height: 6px; background: var(--cream-200); border-radius: 99px; overflow: hidden; }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sage-500), var(--sage-700));
+    border-radius: 99px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+    width: 0%;
+  }
+  .card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: 20px; padding: 40px 36px; box-shadow: var(--shadow);
+  }
+  .step { display: none; animation: fadeIn .35s ease; }
+  .step.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .eyebrow {
+    color: var(--sage-700); font-size: 12px;
+    font-weight: 600; text-transform: uppercase;
+    letter-spacing: .12em; margin-bottom: 10px;
+  }
+  h1 {
+    font-size: 30px; line-height: 1.25;
+    margin: 0 0 14px; font-weight: 600;
+    letter-spacing: -.01em; color: var(--sage-900);
+  }
+  h2 {
+    font-size: 22px; line-height: 1.3;
+    margin: 0 0 8px; font-weight: 600;
+    color: var(--sage-900); letter-spacing: -.005em;
+  }
+  .lead { color: var(--muted); margin: 0 0 24px; white-space: pre-wrap; }
+  .field { margin-bottom: 24px; }
+  .field label.q, .field .q {
+    display: block; font-weight: 500;
+    color: var(--ink); margin-bottom: 6px; line-height: 1.45;
+  }
+  .field .desc { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+  .req { color: var(--error); margin-left: 2px; }
+  input[type=text], textarea {
+    width: 100%; border: 1px solid var(--border);
+    background: var(--cream-50); border-radius: 12px;
+    padding: 12px 14px; font-family: inherit; font-size: 15px; color: var(--ink);
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  input[type=text]:focus, textarea:focus {
+    outline: none; border-color: var(--sage-500); background: #fff;
+    box-shadow: 0 0 0 4px rgba(122,154,126,.15);
+  }
+  textarea { min-height: 110px; resize: vertical; }
+  .opt-list { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border: 1px solid var(--border);
+    background: var(--cream-50); border-radius: 12px;
+    cursor: pointer; transition: all .15s ease; user-select: none;
+  }
+  .opt:hover { border-color: var(--sage-300); background: #fff; }
+  .opt input { accent-color: var(--sage-700); width: 18px; height: 18px; flex-shrink: 0; }
+  .opt.selected { border-color: var(--sage-500); background: var(--sage-100); }
+  .opt .label-text { font-size: 15px; }
+  .scale-block { margin-top: 6px; }
+  .scale-labels {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--muted);
+    margin-bottom: 10px; letter-spacing: .02em;
+  }
+  .scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+  .scale label {
+    position: relative; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 14px 6px; border: 1px solid var(--border);
+    background: var(--cream-50); border-radius: 12px;
+    cursor: pointer; font-weight: 500; color: var(--muted);
+    transition: all .15s ease;
+  }
+  .scale label:hover { border-color: var(--sage-300); color: var(--sage-700); }
+  .scale input { position: absolute; opacity: 0; pointer-events: none; }
+  .scale label.selected {
+    background: var(--sage-700); color: #fff;
+    border-color: var(--sage-700);
+    box-shadow: 0 4px 12px rgba(92,122,98,.25);
+  }
+  .nav { display: flex; justify-content: space-between; margin-top: 32px; gap: 12px; }
+  button {
+    font-family: inherit; font-size: 15px; font-weight: 500;
+    padding: 12px 24px; border-radius: 12px;
+    border: 1px solid transparent; cursor: pointer; transition: all .18s ease;
+  }
+  .btn-primary {
+    background: var(--sage-700); color: #fff;
+    box-shadow: 0 4px 14px rgba(63,90,69,.18);
+  }
+  .btn-primary:hover {
+    background: var(--sage-900); transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(63,90,69,.25);
+  }
+  .btn-secondary {
+    background: transparent; color: var(--sage-700);
+    border-color: var(--border);
+  }
+  .btn-secondary:hover { background: var(--cream-100); border-color: var(--sage-300); }
+  .btn-primary:disabled, .btn-secondary:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .err-msg { color: var(--error); font-size: 13px; margin-top: 8px; display: none; }
+  .field.has-error input, .field.has-error textarea { border-color: var(--error); }
+  .field.has-error .err-msg { display: block; }
+  .done { text-align: center; padding: 30px 20px 10px; }
+  .done .icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: var(--sage-100);
+    display: inline-flex; align-items: center; justify-content: center;
+    margin-bottom: 20px; font-size: 30px;
+  }
+  .footer { text-align: center; margin-top: 24px; font-size: 12px; color: var(--muted); }
+  @media (max-width: 560px) {
+    .shell { padding: 20px 14px 60px; }
+    .card { padding: 28px 22px; border-radius: 16px; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 19px; }
+    .scale { gap: 5px; }
+    .scale label { padding: 12px 2px; font-size: 14px; }
+    .nav button { padding: 11px 18px; font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="shell">
+  <div class="brand"><span class="dot"></span> Survey Minat Bakat ADK</div>
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span id="stepLabel">Mulai</span>
+      <span id="stepCount">0 / 7</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+  <div class="card">
+    <form id="surveyForm" novalidate>
+
+      <section class="step active" data-step="0" data-label="Mulai">
+        <div class="eyebrow">Pengantar</div>
+        <h1>Temukan panggung terbaikmu.</h1>
+        <p class="lead">Setiap dari kita diciptakan dengan blueprint kehebatan yang unik. Di jalan dakwah ini, kita seringkali terlalu fokus pada seberapa lelah kita berjuang, padahal ada cara yang jauh lebih elegan: berkontribusi melalui kekuatan terbaik yang sudah Allah titipkan pada diri kita.
+
+Lembar ini dirancang khusus dari pendekatan psikologi untuk membantu mendengarkan apa yang sebenarnya menjadi minat dan bakat terbesarmu. Tidak ada jawaban yang benar atau salah.
+
+Ambil napas panjang, rileks, dan mari mulai perjalanan menemukan panggung terbaikmu.</p>
+        <div class="nav" style="justify-content: flex-end;">
+          <button type="button" class="btn-primary" data-action="next">Mulai survey →</button>
+        </div>
+      </section>
+
+      <section class="step" data-step="1" data-label="Profil">
+        <div class="eyebrow">Bagian 1 — Profil Punggawa</div>
+        <h2>Kenalan dulu, yuk.</h2>
+        <p class="lead">Data dasar untuk memetakan posisimu di ADK.</p>
+        <div class="field" data-required="1">
+          <label class="q" for="nama">Nama<span class="req">*</span></label>
+          <input type="text" id="nama" name="entry.1325890164" autocomplete="name">
+          <div class="err-msg">Wajib diisi.</div>
+        </div>
+        <div class="field" data-required="1" data-type="radio">
+          <span class="q">Fakultas<span class="req">*</span></span>
+          <div class="opt-list" data-group="fakultas"></div>
+          <div class="err-msg">Pilih salah satu.</div>
+        </div>
+        <div class="field" data-required="1">
+          <label class="q" for="angkatan">Angkatan<span class="req">*</span></label>
+          <input type="text" id="angkatan" name="entry.874836358" placeholder="contoh: 2023">
+          <div class="err-msg">Wajib diisi.</div>
+        </div>
+        <div class="field" data-required="1">
+          <label class="q" for="asalBidang">Asal Bidang<span class="req">*</span></label>
+          <input type="text" id="asalBidang" name="entry.1365259388" placeholder="contoh: Media / Kaderisasi / Fundraising / Syiar / Siyasi">
+          <div class="err-msg">Wajib diisi.</div>
+        </div>
+        <div class="nav">
+          <button type="button" class="btn-secondary" data-action="prev">← Kembali</button>
+          <button type="button" class="btn-primary" data-action="next">Lanjut →</button>
+        </div>
+      </section>
+
+      <section class="step" data-step="2" data-label="Pemetaan Minat">
+        <div class="eyebrow">Bagian 2 — Pemetaan Minat</div>
+        <h2>Seberapa setujukah kamu?</h2>
+        <p class="lead">Adaptasi dari teori RAISEC – Holland. Jawab dengan jujur dari skala 1 (Sangat Tidak Setuju) sampai 5 (Sangat Setuju).</p>
+        <div class="field scale-field" data-required="1" data-entry="entry.1185173765"><span class="q">Saya merasa bersemangat ketika mendengarkan, mendampingi, dan memberikan solusi atas keluh kesah orang lain.<span class="req">*</span></span></div>
+        <div class="field scale-field" data-required="1" data-entry="entry.773911553"><span class="q">Saya lebih suka bekerja dalam tim yang mengutamakan diskusi dan interaksi manusia daripada bekerja sendiri.<span class="req">*</span></span></div>
+        <div class="field scale-field" data-required="1" data-entry="entry.1832682908"><span class="q">Saya memiliki ketertarikan tinggi untuk merancang visual, menulis naskah, atau menciptakan karya kreatif lainnya.<span class="req">*</span></span></div>
+        <div class="field scale-field" data-required="1" data-entry="entry.1761677829"><span class="q">Saya sering memikirkan ide-ide yang out of the box untuk menyelesaikan suatu masalah.<span class="req">*</span></span></div>
+        <div class="field scale-field" data-required="1" data-entry="entry.648198835"><span class="q">Saya menyukai tantangan untuk menawarkan ide, memimpin proyek, atau mengelola kegiatan penggalangan dana.<span class="req">*</span></span></div>
+        <div class="field scale-field" data-required="1" data-entry="entry.1377771035"><span class="q">Saya berani mengambil risiko dan nyaman saat harus mempresentasikan sesuatu di depan umum.<span class="req">*</span></span></div>
+        <div class="field scale-field" data-required="1" data-entry="entry.2098325914"><span class="q">Saya merasa nyaman saat bekerja dengan data, menyusun laporan, atau merapikan arsip dokumen.<span class="req">*</span></span></div>
+        <div class="field scale-field" data-required="1" data-entry="entry.684587498"><span class="q">Saya lebih suka bekerja dengan instruksi dan prosedur yang sangat jelas dan terstruktur.<span class="req">*</span></span></div>
+        <div class="nav">
+          <button type="button" class="btn-secondary" data-action="prev">← Kembali</button>
+          <button type="button" class="btn-primary" data-action="next">Lanjut →</button>
+        </div>
+      </section>
+
+      <section class="step" data-step="3" data-label="Bakat Dasar">
+        <div class="eyebrow">Bagian 3 — Pemetaan Bakat Dasar</div>
+        <h2>Sejauh mana kamu merasa kuat di area ini?</h2>
+        <p class="lead">Nilai dirimu dari 1 (rendah) sampai 5 (sangat kuat).</p>
+        <div class="field scale-field" data-required="1" data-entry="entry.1264636587">
+          <span class="q">Kecerdasan Linguistik (Verbal)<span class="req">*</span></span>
+          <div class="desc">Kemampuan menulis artikel, merangkai kata (copywriting), atau berbicara di depan umum.</div>
+        </div>
+        <div class="field scale-field" data-required="1" data-entry="entry.1035412017">
+          <span class="q">Kecerdasan Visual-Spasial<span class="req">*</span></span>
+          <div class="desc">Kepekaan terhadap estetika, warna, layout, komposisi fotografi, atau videografi.</div>
+        </div>
+        <div class="field scale-field" data-required="1" data-entry="entry.1510733700">
+          <span class="q">Kecerdasan Interpersonal<span class="req">*</span></span>
+          <div class="desc">Kemampuan melobi tokoh/dosen, membangun jejaring (networking), dan resolusi konflik.</div>
+        </div>
+        <div class="field scale-field" data-required="1" data-entry="entry.2115750691">
+          <span class="q">Kecerdasan Intrapersonal<span class="req">*</span></span>
+          <div class="desc">Kemampuan mengevaluasi diri, merenung, dan memotivasi diri sendiri secara mandiri.</div>
+        </div>
+        <div class="nav">
+          <button type="button" class="btn-secondary" data-action="prev">← Kembali</button>
+          <button type="button" class="btn-primary" data-action="next">Lanjut →</button>
+        </div>
+      </section>
+
+      <section class="step" data-step="4" data-label="Spesialisasi">
+        <div class="eyebrow">Bagian 4 — Spesialisasi Bidang</div>
+        <h2>Skill apa yang paling kamu kuasai?</h2>
+        <p class="lead">Boleh pilih lebih dari satu di tiap bidang.</p>
+        <div class="field" data-type="checkbox"><span class="q">Media</span><div class="opt-list" data-group="media" data-entry="entry.993399505"></div></div>
+        <div class="field" data-type="checkbox"><span class="q">Kaderisasi</span><div class="opt-list" data-group="kaderisasi" data-entry="entry.100203345"></div></div>
+        <div class="field" data-type="checkbox"><span class="q">Fundraising</span><div class="opt-list" data-group="fundraising" data-entry="entry.682901811"></div></div>
+        <div class="field" data-type="checkbox"><span class="q">Syiar</span><div class="opt-list" data-group="syiar" data-entry="entry.1047607709"></div></div>
+        <div class="field" data-type="checkbox"><span class="q">Siyasi</span><div class="opt-list" data-group="siyasi" data-entry="entry.203495796"></div></div>
+        <div class="nav">
+          <button type="button" class="btn-secondary" data-action="prev">← Kembali</button>
+          <button type="button" class="btn-primary" data-action="next">Lanjut →</button>
+        </div>
+      </section>
+
+      <section class="step" data-step="5" data-label="Refleksi">
+        <div class="eyebrow">Bagian 5 — Refleksi & Komitmen</div>
+        <h2>Sedikit cerita & komitmenmu.</h2>
+        <div class="field" data-required="0">
+          <label class="q" for="kontribusi">Apa kontribusi atau project spesifik yang menurut Anda paling berdampak di bidang yang Anda pilih saat ini?</label>
+          <textarea id="kontribusi" name="entry.993672546" placeholder="Cerita singkat tentang kontribusi yang menurutmu paling berdampak..."></textarea>
+        </div>
+        <div class="field" data-required="1" data-type="radio">
+          <span class="q">Berapa estimasi waktu yang siap Anda dedikasikan untuk amanah di ADK dalam satu minggu?<span class="req">*</span></span>
+          <div class="opt-list" data-group="komitmen"></div>
+          <div class="err-msg">Pilih salah satu.</div>
+        </div>
+        <div class="nav">
+          <button type="button" class="btn-secondary" data-action="prev">← Kembali</button>
+          <button type="button" class="btn-primary" data-action="submit">Kirim jawaban →</button>
+        </div>
+      </section>
+
+      <section class="step" data-step="6" data-label="Selesai">
+        <div class="done">
+          <div class="icon">🌿</div>
+          <h1>Terima kasih sobat!</h1>
+          <p class="lead" style="white-space: pre-wrap;">Kamu baru saja menyelesaikan langkah besar dalam menemukan 'panggung terbaik' dirimu. Setiap jawaban jujur yang kamu berikan adalah peta berharga bagi kami untuk menyelaraskan blueprint kehebatan kamu dengan kebutuhan dakwah ini.
+
+Tidak ada potensi yang sia-sia. Tunggu kabar selanjutnya dari tim kami. Sampai bertemu di titik di mana kontribusi Anda akan berdampak paling besar. Sukses selalu! 😼</p>
+        </div>
+      </section>
+
+    </form>
+  </div>
+  <div class="footer">Form custom · Data tetap tersimpan di Google Sheets ADK</div>
+</div>
+
+<script>
+  const FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSffmZzdtub0oD0MXimlpL8o7BrTCf9odMlssl09t7AS1hC91w/formResponse";
+
+  const OPTIONS = {
+    fakultas: ["FT","FEB","FIP","FBS","FPsi","FISH","FIKK","FMIPA"],
+    media: [
+      "Desain Grafis (Adobe Illustrator, Canva, Photoshop, dll.)",
+      "Video Editing & Color Grading (DaVinci Resolve, Premiere Pro, CapCut, dll.)",
+      "Manajemen Kampanye Digital & Analitik (Meta Ads, Instagram Insights, dll.)",
+      "Penulisan Naskah & Copywriting (Artikel, Caption persuasif, Script Video)",
+      "Komunikasi & Diplomasi"
+    ],
+    kaderisasi: [
+      "Fasilitasi & Pelatihan (Training of Trainers, Ice Breaking, Simulasi)",
+      "Psikologi Perkembangan & Konseling Dasar",
+      "Manajemen Data Anggota (Database, Pelacakan Perkembangan)",
+      "Kurikulum Pendidikan & Materi Pembinaan"
+    ],
+    fundraising: [
+      "Manajemen Proyek Penggalangan Dana (Event Management, Proposal Writing)",
+      "Negosiasi & Komunikasi Bisnis (Pendekatan Mitra, Sponsorship)",
+      "Analisis Data Donatur & Pelaporan Keuangan Sederhana",
+      "Desain Media Promosi Fundraising"
+    ],
+    syiar: [
+      "Komunikasi Publik & Retorika (Kultum, Tausiyah, Moderasi Diskusi)",
+      "Kajian Keislaman Kontemporer (Memahami Isu Fikih & Sosial)",
+      "Pengelolaan Konten Dakwah Non-Digital (Majalah Dinding, Buletin)",
+      "Lobi & Hubungan Tokoh (Mendekati Ustadz/Dosen, Mengundang Narasumber)"
+    ],
+    siyasi: [
+      "Analisis Kebijakan Kampus & Isu Mahasiswa",
+      "Advokasi & Diplomasi (Lobi ke pihak birokrasi kampus)",
+      "Penulisan Rilis Sikap & Opini Politik Kampus",
+      "Pemetaan dan Jaringan Gerakan (Gerakan Mahasiswa, Organisasi Eksternal)"
+    ],
+    komitmen: ["< 5 Jam", "5-10 Jam", "> 10 Jam"]
+  };
+
+  function injectRadio(groupKey, entryName) {
+    const host = document.querySelector(`[data-group="${groupKey}"]`);
+    if (!host) return;
+    OPTIONS[groupKey].forEach((opt, i) => {
+      const id = `${groupKey}-${i}`;
+      const lbl = document.createElement('label');
+      lbl.className = 'opt';
+      lbl.innerHTML = `<input type="radio" name="${entryName}" value="${escapeAttr(opt)}" id="${id}"><span class="label-text">${escapeHTML(opt)}</span>`;
+      host.appendChild(lbl);
+      lbl.addEventListener('click', () => {
+        host.querySelectorAll('.opt').forEach(o => o.classList.remove('selected'));
+        lbl.classList.add('selected');
+        lbl.querySelector('input').checked = true;
+      });
+    });
+  }
+  injectRadio('fakultas', 'entry.586989304');
+  injectRadio('komitmen', 'entry.59413979');
+
+  function injectCheckbox(groupKey) {
+    const host = document.querySelector(`[data-group="${groupKey}"]`);
+    if (!host) return;
+    const entry = host.dataset.entry;
+    OPTIONS[groupKey].forEach((opt, i) => {
+      const id = `${groupKey}-${i}`;
+      const lbl = document.createElement('label');
+      lbl.className = 'opt';
+      lbl.innerHTML = `<input type="checkbox" name="${entry}" value="${escapeAttr(opt)}" id="${id}"><span class="label-text">${escapeHTML(opt)}</span>`;
+      host.appendChild(lbl);
+      const input = lbl.querySelector('input');
+      lbl.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'INPUT') input.checked = !input.checked;
+        lbl.classList.toggle('selected', input.checked);
+      });
+      input.addEventListener('change', () => lbl.classList.toggle('selected', input.checked));
+    });
+  }
+  ['media','kaderisasi','fundraising','syiar','siyasi'].forEach(injectCheckbox);
+
+  document.querySelectorAll('.scale-field').forEach(field => {
+    const entry = field.dataset.entry;
+    const block = document.createElement('div');
+    block.className = 'scale-block';
+    block.innerHTML = `
+      <div class="scale-labels"><span>Sangat Tidak Setuju</span><span>Sangat Setuju</span></div>
+      <div class="scale">
+        ${[1,2,3,4,5].map(v => `<label data-val="${v}"><input type="radio" name="${entry}" value="${v}">${v}</label>`).join('')}
+      </div>
+      <div class="err-msg">Pilih satu nilai.</div>
+    `;
+    field.appendChild(block);
+    block.querySelectorAll('.scale label').forEach(l => {
+      l.addEventListener('click', () => {
+        block.querySelectorAll('.scale label').forEach(x => x.classList.remove('selected'));
+        l.classList.add('selected');
+        l.querySelector('input').checked = true;
+        field.classList.remove('has-error');
+      });
+    });
+  });
+
+  const steps = [...document.querySelectorAll('.step')];
+  const total = steps.length - 1;
+  let current = 0;
+
+  function updateProgress() {
+    const pct = current === 0 ? 0 : Math.min(100, Math.round((current / (total - 1)) * 100));
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('stepLabel').textContent = steps[current].dataset.label;
+    document.getElementById('stepCount').textContent = `${current} / ${total - 1}`;
+  }
+  function showStep(i) {
+    steps.forEach(s => s.classList.remove('active'));
+    steps[i].classList.add('active');
+    current = i;
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function validateStep(stepEl) {
+    let ok = true;
+    stepEl.querySelectorAll('.field').forEach(f => {
+      f.classList.remove('has-error');
+      const required = f.dataset.required === '1';
+      if (!required) return;
+      const inputs = f.querySelectorAll('input, textarea');
+      let filled = false;
+      inputs.forEach(inp => {
+        if (inp.type === 'radio' || inp.type === 'checkbox') {
+          if (inp.checked) filled = true;
+        } else if ((inp.value || '').trim() !== '') filled = true;
+      });
+      if (f.classList.contains('scale-field')) {
+        const checked = f.querySelector('input[type=radio]:checked');
+        filled = !!checked;
+      }
+      if (!filled) { f.classList.add('has-error'); ok = false; }
+    });
+    return ok;
+  }
+  document.querySelectorAll('[data-action="next"]').forEach(b =>
+    b.addEventListener('click', () => { if (!validateStep(steps[current])) return; showStep(current + 1); })
+  );
+  document.querySelectorAll('[data-action="prev"]').forEach(b =>
+    b.addEventListener('click', () => showStep(Math.max(0, current - 1)))
+  );
+
+  document.querySelector('[data-action="submit"]').addEventListener('click', async (e) => {
+    if (!validateStep(steps[current])) return;
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    btn.textContent = 'Mengirim…';
+
+    const form = document.getElementById('surveyForm');
+    const fd = new FormData();
+    form.querySelectorAll('input, textarea').forEach(inp => {
+      if (!inp.name) return;
+      if (inp.type === 'radio' || inp.type === 'checkbox') {
+        if (inp.checked) fd.append(inp.name, inp.value);
+      } else if ((inp.value || '').trim() !== '') {
+        fd.append(inp.name, inp.value);
+      }
+    });
+    // CRITICAL: hidden params untuk multi-section Google Form (6 halaman)
+    // Tanpa ini, submission masuk tapi data field tidak terisi (hanya timestamp)
+    fd.append('fvv', '1');
+    fd.append('pageHistory', '0,1,2,3,4,5');
+    fd.append('fbzx', String(Date.now()) + Math.floor(Math.random() * 1e9));
+
+    try {
+      await fetch(FORM_ACTION, { method: 'POST', mode: 'no-cors', body: fd });
+    } catch (err) {}
+    showStep(steps.length - 1);
+  });
+
+  function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]))}
+  function escapeAttr(s){return escapeHTML(s)}
+  updateProgress();
+</script>
+</body>
+</html>
